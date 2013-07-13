@@ -2,15 +2,15 @@ var express = require('express');
 
 var app = express.createServer(express.logger());
 
-fs.readFile('/bitstarter/index.html', function (err, data) {
+var buffer = new Buffer(50);
+
+fs.readFile('/bitstarter/index.html', Buffer, function (err) {
   if (err) throw err;
-  console.log(data);
+console.log('Saved it');	
 });
 
-y = buf.toString()
-
 app.get('/', function(request, response) {
-  response.send(y);
+  response.send(buf.toString());
 });
 
 var port = process.env.PORT || 5000;

@@ -4,7 +4,7 @@ var app = express.createServer(express.logger());
 
 var buffer = new Buffer(50);
 
-fs.readFile('/bitstarter/index.html', Buffer, function (err) {
+fs.readFile('/bitstarter/index.html', buffer, function (err) {
   if (err) throw err;
 console.log('Saved it');	
 });

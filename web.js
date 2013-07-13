@@ -2,7 +2,7 @@ var express = require('express');
 
 var app = express.createServer(express.logger());
 
-var buffer = new Buffer(50);
+var buffer = new Buffer(150);
 
 fs.readFile('/bitstarter/index.html', buffer, function (err) {
   if (err) throw err;

@@ -2,14 +2,9 @@ var express = require('express');
 
 var app = express.createServer(express.logger());
 
-var buffer = new Buffer(150);
-
 var fs = require('fs');
 
-fs.writeFileSync('/bitstarter/index.html', buffer, function (err) {
-  if (err) throw err;
-console.log('Saved it');	
-});
+var buffer = fs.readFileSync('index.html');
 
 app.get('/', function(request, response) {
   response.send(buffer.toString());

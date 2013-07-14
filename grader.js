@@ -20,10 +20,10 @@ References:
    - https://developer.mozilla.org/en-US/docs/JSON
    - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
 */
-
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 
@@ -35,6 +35,17 @@ var assertFileExists = function(infile) {
     }
     return instr;
 };
+
+var assertURLExists = function(url) {
+  var urlinputstr = url.toString();
+  rest.get(urlinputstr).on('complete', function(result) {
+    if (result instanceof Error) {
+      console.log('Error: ' + result.message);
+      this.retry(5000); //rety in 5 seconds
+    }
+  });
+  return urlinputstr;
+}
 
 var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
@@ -55,6 +66,17 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return out;
 };
 
+var checkURL = function(urlContent, checksfile) {
+    $ = cheerio.load(urlContent);
+    var checks = loadChecks(checksfile).sort();
+    var out = {};
+    for(var ii in checks) {
+        var present = $(checks[ii]).length > 0;
+        out[checks[ii]] = present;
+    }
+    return out;
+};
+
 var clone = function(fn) {
     // Workaround for commander.js issue.
     // http://stackoverflow.com/a/6772648
@@ -62,22 +84,27 @@ var clone = function(fn) {
 };
 
 if(require.main == module) {
-    program
-        .option('-c, --checks <check_file>', 'Path to checks.json', CHECKSFILE_DEFAULT)
-        .option('-f, --file <html_file>', 'Path to index.html', HTMLFILE_DEFAULT)
-	.option('-u, --url <url>', 'Path to heroku url', CHECKSURL_DEFAULT)
-        .parse(process.argv);
-
-if(!program.url)
-    	var checkJson = checkHtmlFile(program.file, program.checks);
-	var outJson = JSON.stringify(checkJson, null, 4);
-	console.log(outJson);
+ 	program
+ 		.option('-c, --checks <check_file>', 'Path to checks.json', CHECKSFILE_DEFAULT)
+ 		.option('-f, --file <html_file>', 'Path to index.html', HTMLFILE_DEFAULT)
+ 		.option('-u, --url <url>', 'path to heroku app')
+ 		.parse(process.argv);
+ 	//file input 
+	if(!program.url){
+ 		var checkJson = checkHtmlFile(program.file, program.checks);
+ 		var outJson = JSON.stringify(checkJson, null, 4);
+ 		console.log(outJson);
+	 }
+	//url input	 
+	else {
+ 		rest.get(program.url).on('complete', function(result, response) {
+ 		var checkJson = checkURL(result, program.checks);
+ 		var outJson = JSON.stringify(checkJson, null, 4);
+ 		console.log(outJson);
+ 	});
+ 
 }
-else{ rest.get(program.url).on('complete', function(result){
- 	var checkJson = checkURL(program.url, program.checks);
- 	var outJson = JSON.stringify(checkJson, null, 4);
- 	console.log(outJson);
- }}
- else {
-    exports.checkHtmlFile = checkHtmlFile;
+}
+else {
+ exports.checkHtmlFile = checkHtmlFile;
 }

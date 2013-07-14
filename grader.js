@@ -79,7 +79,7 @@ else rest.get(program.url).on('complete', function(result){
  	var checkJson = checkURL(program.url, program.checks);
  	var outJson = JSON.stringify(checkJson, null, 4);
  	console.log(outJson);
- }
+ }}
  else {
     exports.checkHtmlFile = checkHtmlFile;
-}}
+}
